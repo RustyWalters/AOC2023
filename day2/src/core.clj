@@ -30,11 +30,14 @@
        (<= (:blue results) (:blue maximum-blocks))
        (<= (:green results) (:green maximum-blocks))))
 
+(defn get-blocks [game]
+  (->> (split-into-hands game)
+       (map block->map)
+       (reduce #(merge-with max %1 %2))))
+
 (defn score-game [game]
-  (let [hands (split-into-hands game)
-        game-id (get-game-id game)
-        blocks (map block->map hands)
-        results (reduce #(merge-with max %1 %2) blocks)
+  (let [ game-id (get-game-id game)
+        results (get-blocks game)
         is-possible (is-hand-possible? results)]
     (if is-possible (Integer/parseInt game-id) 0)))
 
@@ -46,7 +49,12 @@
 
 (defn part2 [data]
   (->> (read-input-file data)
-       (parse-input)))
+       (parse-input)
+       (map get-blocks)
+       (map vals)
+       (map #(reduce * %))
+       (reduce + 0)))
+
 (comment
   (println (part1 "test/test-part1-input.txt"))
   (println (part1 "src/part1-input.txt"))
